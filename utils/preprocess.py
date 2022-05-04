@@ -32,7 +32,9 @@ def create_loaders(n_batch, path='data', batch=True,
         'train': transforms.Compose([
             transforms.Resize((img_size, img_size)),
             transforms.CenterCrop(crop_size),
-            transforms.RandomRotation((-10, 10)),
+            transforms.RandomRotation((-30, 30)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=MEAN,
@@ -175,44 +177,33 @@ def visualize(dictionary, loader=None, single=True):
     """
 
     # create converters for images and labels
-    # convert = lambda x: np.clip(x.numpy().transpose((1, 2, 0)), 0, 1)
+    convert = lambda x: x.numpy().transpose((1, 2, 0))
     convert_label = lambda x: str(x.item())
 
     # transform single images and their labels
     def show_single(image, lbl, index=0):
-        # unnormalize = transforms.Normalize((-MEAN / STD).tolist(), (1.0 / STD).tolist())
-        denorm = transforms.Normalize(
-            mean=[-m / s for m, s in zip(MEAN, STD)],
-            std=[1.0 / s for s in STD]
-        )
-        image = (denorm(image=image)["image"] * 255).astype(np.uint8)
-
-        # image = unnormalize(image[index, :])
-        lbl = convert_label(lbl[index])   # get the label from dictionary
+        image = convert(image[index, :])    # transform the image
+        lbl = convert_label(lbl[index])     # get the label from dictionary
         return image, dictionary.get_content(int(lbl))
 
     # iterate through one or batch of images
     images, labels = next(iter(loader))
-    img_len = len(images)
+    img_len = 20
 
     # show single image
     if single:
         i, l = show_single(images, labels)
+        plt.figure(figsize=(9, 5))
         plt.title(l, fontsize=20)
-        plt.grid(False)
         plt.imshow(i)
-
     else:
         # create a figure to show img_len batch of images
-        fig = plt.figure(figsize=(30, 10))
-        fig.tight_layout(pad=3.0)
-        fig.suptitle(f'Sample batch of {img_len}', fontsize=40, y=0.55)
+        fig = plt.figure(figsize=(20, 8))
 
         for idx in range(img_len):
-            ax = fig.add_subplot(2, int(img_len / 2), idx + 1, xticks=[], yticks=[])
+            ax = fig.add_subplot(4, 8, idx + 1, xticks=[], yticks=[])
             image, label = show_single(images, labels, idx)
-            ax.set_title(label, fontsize=15)
-            plt.grid(False)
             ax.imshow(image)
+            ax.set_title(label, fontsize=10, wrap=True)
     plt.show()
 
