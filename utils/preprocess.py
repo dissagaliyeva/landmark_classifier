@@ -177,7 +177,7 @@ def visualize(dictionary, loader=None, single=True):
     """
 
     # create converters for images and labels
-    convert = lambda x: x.numpy().transpose((1, 2, 0))
+    convert = lambda x: np.clip(x.numpy().transpose((1, 2, 0)), 0, 1)
     convert_label = lambda x: str(x.item())
 
     # transform single images and their labels
@@ -188,7 +188,7 @@ def visualize(dictionary, loader=None, single=True):
 
     # iterate through one or batch of images
     images, labels = next(iter(loader))
-    img_len = 20
+    img_len = 8
 
     # show single image
     if single:
@@ -201,7 +201,7 @@ def visualize(dictionary, loader=None, single=True):
         fig = plt.figure(figsize=(20, 8))
 
         for idx in range(img_len):
-            ax = fig.add_subplot(4, 8, idx + 1, xticks=[], yticks=[])
+            ax = fig.add_subplot(1, 8, idx + 1, xticks=[], yticks=[])
             image, label = show_single(images, labels, idx)
             ax.imshow(image)
             ax.set_title(label, fontsize=10, wrap=True)
