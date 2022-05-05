@@ -1,0 +1,5 @@
+# History
+
+## 0.1.0
+### Added
+- PyTorch VGG16 model trained on 20 epochs
