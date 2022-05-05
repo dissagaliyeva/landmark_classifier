@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import torch.cuda
+
 from utils.preprocess.preprocess import predict_landmarks
 
 
@@ -64,8 +66,12 @@ def suggest_locations(img, model, dictionary, k=1, name=None):
     This function shows the final image and associated K predictions.
 
     """
+    # get cuda condition
+    cuda = torch.cuda.is_available()
+
     # get landmark predictions
-    img, predicted_landmarks, probs = predict_landmarks(img=img, k=k, dictionary=dictionary, model=model)
+    img, predicted_landmarks, probs = predict_landmarks(img=img, k=k, dictionary=dictionary,
+                                                        model=model, cuda=cuda)
 
     preds = pd.DataFrame({'loc': predicted_landmarks.split(','),
                           'prob': probs})

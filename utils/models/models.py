@@ -26,9 +26,18 @@ def train():
 
 
 def predict_image(img, title, model_name='resnet34'):
-    # set cuda
+    """
+
+    :param img:
+    :param title:
+    :param model_name:
+    :return:
+    """
+
+    # get cuda condition
     cuda = torch.cuda.is_available()
 
+    # open checkpoints and predict the image
     model = None
     if model_name.lower() == 'resnet34':
         model = resnet34(pretrained=True)
@@ -43,11 +52,14 @@ def predict_image(img, title, model_name='resnet34'):
         change_ending(model, 'vgg16')
         model.load_state_dict(torch.load('checkpoints/model_vgg16.pt'))
 
+    # set model to cuda if available
     if cuda:
         model = model.cuda()
 
     # create dictionary
     dictionary = Dictionary(datasets.ImageFolder('output/train'))
+
+    # show image and TOP-3 predictions
     suggest_locations(img, model, dictionary, name=title, k=3)
 
 #
