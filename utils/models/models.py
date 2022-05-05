@@ -8,7 +8,20 @@ from torch import optim
 from torch.nn import functional as F
 
 
-def get_optimizer(model):
+def change_ending(model, name):
+    if name == 'vgg16':
+        # params for vgg16
+        for param in model.features.parameters():
+            param.requires_grad = False
+
+        model.classifier[6] = nn.Linear(model.classifier[6].in_features, 50)
+
+    elif name == 'resnet34' or name == 'resnet18':
+        model.fc = nn.Linear(in_features=512, out_features=50)
+
+
+def get_optimizer(model, name='resnet34'):
+
     # instantiate the optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=1)
 

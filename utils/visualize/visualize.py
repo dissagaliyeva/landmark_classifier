@@ -59,13 +59,13 @@ def show_image(image, name=None, prediction=None):
     plt.show()
 
 
-def suggest_locations(model, dictionary, k=1):
+def suggest_locations(img, model, dictionary, k=1, name=None):
     """
     This function shows the final image and associated K predictions.
 
     """
     # get landmark predictions
-    img, predicted_landmarks, probs = predict_landmarks(k=k, dictionary=dictionary, model=model)
+    img, predicted_landmarks, probs = predict_landmarks(img=img, k=k, dictionary=dictionary, model=model)
 
     preds = pd.DataFrame({'loc': predicted_landmarks.split(','),
                           'prob': probs})
@@ -83,7 +83,11 @@ def suggest_locations(model, dictionary, k=1):
     ax[1].hist(preds['loc'], weights=preds['prob'])
 
     # add title and show
-    fig.suptitle('Single-image prediction', fontsize=17)
+    title = 'Single-image prediction '
+    if name:
+        title += f'for {name}'
+
+    fig.suptitle(title, fontsize=17)
     plt.tight_layout()
     plt.show()
 

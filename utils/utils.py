@@ -79,3 +79,4 @@ class Dictionary:
 
         # return comma-separated representation
         return ', '.join([make_prettier(x) for x in index])
+

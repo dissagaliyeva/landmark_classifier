@@ -90,7 +90,7 @@ def get_random_image(path):
     return Image.open(os.path.join(folder, random.choice(os.listdir(folder))))
 
 
-def predict_landmarks(k: int, model, dictionary,
+def predict_landmarks(k: int, model, dictionary, img=None,
                       cuda=True, img_size=226, crop_size=224):
     """
     This function read the image file, applies appropriate transformations, predicts top K locations of images.
@@ -101,6 +101,7 @@ def predict_landmarks(k: int, model, dictionary,
 
     Returns:
         transformed image and pretty formatted location predictions
+        :param img:
         :param dictionary:
         :param cuda:
         :param k:
@@ -109,11 +110,11 @@ def predict_landmarks(k: int, model, dictionary,
         :param img_size:
     """
 
-    temp = get_random_image('data/train')
+    temp = get_random_image('data/train') if img is None else img
     transform = get_transforms(img_size, crop_size)
 
     img = temp.copy()
-    img = transform(img).unsqueeze_(0)
+    img = transform['test'](img).unsqueeze_(0)
     img = img.cuda() if cuda else img
 
     # pass the model in evaluation mode

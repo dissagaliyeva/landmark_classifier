@@ -5,7 +5,14 @@ import re
 import argparse
 from PIL import Image
 import matplotlib.pyplot as plt
-from utils.visualize.visualize import show_image
+from utils.visualize.visualize import show_image, suggest_locations
+from utils.utils import Dictionary
+from utils.models import models
+# from utils.preprocess.preprocess import
+
+import torch
+from torchvision.models import resnet34, resnet18, vgg16
+from torchvision import datasets
 
 
 # give info about the default values
@@ -63,6 +70,60 @@ else:
     img   = Image.open(args['image'])
     title = args['image'].split('/')[1].replace('_', ' ')
     title = ' '.join(re.findall('[A-Za-z]+', title))
+    cuda = torch.cuda.is_available()
 
-    show_image(img, title)
+    # show_image(img, title)
+
+    # transform the image
+    print('Preprocessing the image...')
+
+    # load model
+    print('Loading the model...')
+
+    model = None
+    if args['model'].lower() == 'resnet34':
+        model = resnet34(pretrained=True)
+        models.change_ending(model, 'resnet34')
+        model.load_state_dict(torch.load('checkpoints/model_resnet34.pt'))
+    elif args['model'].lower() == 'resnet18':
+        model = resnet18(pretrained=True)
+        models.change_ending(model, 'resnet18')
+        model.load_state_dict(torch.load('checkpoints/model_resnet18.pt'))
+    elif args['model'].lower() == 'vgg16':
+        model = vgg16(pretrained=True)
+        models.change_ending(model, 'vgg16')
+        model.load_state_dict(torch.load('checkpoints/model_vgg16.pt'))
+
+    if cuda:
+        model = model.cuda()
+
+    # create dictionary
+    dictionary = Dictionary(datasets.ImageFolder('output/train'))
+    suggest_locations(img, model, dictionary, name=title, k=3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
