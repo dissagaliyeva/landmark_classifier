@@ -7,9 +7,10 @@ setup(
     long_description=open('README.md').read() + '\n\n' + open('CHANGELOG.txt').read(),
     name='landmark_classifier',
     version='0.1.0',
-    # install_requires=['pandas', 'scipy', 'matplotlib'],
+    license='MIT',
     install_requires=[
-        'pandas>=1.0',
-        # 'matplotlib>=2.2.1,<3' # bigger than 2.2.1 but < 3
+        'pandas', 'numpy', 'matplotlib', 'seaborn',
+        'fastai', 'pytorch', 'torchvision', 'torchsummary',
+        'split-folders', 'pillow~=9.0.1'
     ]
 )
