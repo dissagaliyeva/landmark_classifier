@@ -111,6 +111,7 @@ def predict_landmarks(k: int, model, dictionary, img=None,
     """
 
     temp = get_random_image('data/train') if img is None else img
+
     transform = get_transforms(img_size, crop_size)
 
     img = temp.copy()

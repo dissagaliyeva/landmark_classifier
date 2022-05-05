@@ -1,18 +1,13 @@
 # USAGE
 # python run.py
-
+import os.path
 import re
 import argparse
 from PIL import Image
-import matplotlib.pyplot as plt
-
-
 from utils.models import models
-# from utils.preprocess.preprocess import
 
-import torch
-from torchvision.models import resnet34, resnet18, vgg16
-from torchvision import datasets
+import warnings
+warnings.filterwarnings('ignore')
 
 
 # give info about the default values
@@ -30,14 +25,17 @@ python run.py -i "path/to/image"
 
 If you want to train your own model, make sure to specify:
 1) Custom (default=False):                    -c True
-2) Model (default=resnet34, vgg16, resnet18): -m "resnet34"
-3) Train (default=pytorch, fastai):           -t "pytorch" 
-4) Batch size (default=16):                   -b 16
-5) Epochs (default=20):                       -e 20
-6) Optimizer (default=adam, sgd, adagrad)     -o "adam"
+2) Data path (default='data')                 -p "data"
+3) Model (default=resnet34, vgg16, resnet18): -m "resnet34"
+4) Train (default=pytorch, fastai):           -t "pytorch" 
+5) Batch size (default=16):                   -b 16
+6) Epochs (default=20):                       -e 20
+7) Optimizer (default=adam, sgd, adagrad)     -o "adam"
 
 Example: 
-python -c True -m "resnet18" -t "pytorch" -b 16 -e 100 -o "adagrad"
+python -c True 
+
+python -c True -m "resnet18" -t "fastai" -b 32 -e 50 -o "adagrad"
 
 """)
 
@@ -48,29 +46,49 @@ ap.add_argument('-i', '--image', required=False, default='images/19.Vienna_City_
 
 # train custom model
 ap.add_argument('-c', '--custom', required=False, default=False,
-                type=bool, help='Whether to train a custom model')
+                type=bool, help='Whether to train a custom model (default=False)')
+
+ap.add_argument('-p', '--path', required=False, default='data/',
+                type=str, help='Path to data folder. It should have train/test '
+                               'or train/val/test folders (default="data/")')
+
 ap.add_argument('-m', '--model', required=False, default='resnet34',
-                type=str, help='CNN model to run (vgg16, resnet18, resnet34)')
+                type=str, help='CNN model to run (options: vgg16, resnet18, resnet34) '
+                               '(default="resnet34)"')
+
 ap.add_argument('-t', '--train', required=False, default='pytorch',
-                type=str, help='Training option between PyTorch & FastAI')
+                type=str, help='Training option between PyTorch & FastAI (default="pytorch")')
+
 ap.add_argument('-b', '--batch', required=False, default=16,
-                type=int, help='Batch size for training')
-ap.add_argument('-e', '--epochs', required=False, default=20,
-                type=int, help='Number of epochs to train the model')
+                type=int, help='Batch size for training (default=16)')
+
+ap.add_argument('-e', '--epochs', required=False, default=50,
+                type=int, help='Number of epochs to train the model (default=20)')
+
 ap.add_argument('-o', '--optim', required=False, default='Adam',
-                type=str, help='Optimizer to use (adam, sgd, adagrad)')
+                type=str, help='Optimizer to use (options: adam, sgd, adagrad) (default="adam")')
 
 args = vars(ap.parse_args())
 
 if args['custom']:
     print('Training a model...')
-    models.train(mode=args['train'], batch_size=args['batch'], epochs=args['epochs'])
+    models.train(path=args['path'], model=args['model'],
+                 mode=args['train'], batch_size=args['batch'],
+                 epochs=args['epochs'], optim=args['optim'])
 
 else:
-    img   = Image.open(args['image'])
-    title = args['image'].split('/')[1].replace('_', ' ')
+    path  = args['image']
+    model = args['model']
+
+    # verify the image and model exist
+    assert os.path.exists(path), f'{path} does not exist.'
+    assert model.lower() in ['vgg16', 'resnet14', 'resnet34'], f'Please choose one of the following models: ' \
+                                                               f'vgg16, resnet18, resnet34'
+
+    img   = Image.open(path)
+    title = path.split('/')[1].replace('_', ' ')
     title = ' '.join(re.findall('[A-Za-z]+', title))
-    models.predict_image(img, title, model_name=args['model'])
+    models.predict_image(img, title, model_name=model)
 
 
 

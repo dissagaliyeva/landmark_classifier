@@ -21,7 +21,8 @@ def change_ending(model, name):
         model.fc = nn.Linear(in_features=512, out_features=50)
 
 
-def train():
+def train(path='data', model='resnet34', mode='pytorch',
+          batch_size=16, epochs=50, optimizer='adam'):
     pass
 
 
