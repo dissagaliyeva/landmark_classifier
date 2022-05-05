@@ -1,9 +1,12 @@
 # USAGE
 # python run.py
 
+import re
 import argparse
-import sys
-import os
+from PIL import Image
+import matplotlib.pyplot as plt
+from utils.visualize.visualize import show_image
+
 
 # give info about the default values
 print("""
@@ -51,7 +54,15 @@ ap.add_argument('-o', '--optim', required=False, default='Adam',
                 type=str, help='Optimizer to use (adam, sgd, adagrad)')
 
 args = vars(ap.parse_args())
-print(args)
 
 if args['custom']:
     print('Training a model...')
+
+else:
+    print('Opening the image...')
+    img   = Image.open(args['image'])
+    title = args['image'].split('/')[1].replace('_', ' ')
+    title = ' '.join(re.findall('[A-Za-z]+', title))
+
+    show_image(img, title)
+

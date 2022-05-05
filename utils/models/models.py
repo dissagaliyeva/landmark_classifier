@@ -10,7 +10,7 @@ from torch.nn import functional as F
 
 def get_optimizer(model):
     # instantiate the optimizer
-    optimizer = optim.Adagrad(model.parameters(), lr=0.01)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=1)
 
     # instantiate the learning decay scheduler
     lr_decay = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.96)
@@ -101,11 +101,10 @@ def train(n_epochs: int, loaders: dict, model, optimizer, criterion, use_cuda: b
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min, valid_loss))
 
-            save_path = 'checkpoints/' + save_path
-            if not os.path.exists(save_path):
+            if not os.path.exists('checkpoints/'):
                 os.mkdir(save_path)
 
-            torch.save(model.state_dict(), save_path)
+            torch.save(model.state_dict(), 'checkpoints/' + save_path)
             valid_loss_min = valid_loss
 
         # update learning rate decay
