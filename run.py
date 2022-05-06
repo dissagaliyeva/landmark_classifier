@@ -59,6 +59,9 @@ ap.add_argument('-m', '--model', required=False, default='resnet34',
 ap.add_argument('-t', '--train', required=False, default='pytorch',
                 type=str, help='Training option between PyTorch & FastAI (default="pytorch")')
 
+ap.add_argument('-l', '--lr', required=False, default=0.01,
+                type=str, help='Starting learning rate (default=0.01)')
+
 ap.add_argument('-b', '--batch', required=False, default=16,
                 type=int, help='Batch size for training (default=16)')
 
@@ -72,9 +75,9 @@ args = vars(ap.parse_args())
 
 if args['custom']:
     print('Training a model...')
-    models.train(path=args['path'], model=args['model'],
+    models.train(path=args['path'], model=args['model'], lr=args['lr'],
                  mode=args['train'], batch_size=args['batch'],
-                 epochs=args['epochs'], optim=args['optim'])
+                 epochs=args['epochs'], optimizer=args['optim'])
 
 else:
     path  = args['image']

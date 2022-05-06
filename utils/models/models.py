@@ -7,6 +7,7 @@ from torchvision import datasets
 
 from utils.utils import Dictionary
 from utils.visualize.visualize import show_image, suggest_locations
+from utils.models.hyper_params import get_optim
 
 
 def change_ending(model, name):
@@ -24,9 +25,11 @@ def change_ending(model, name):
 
 
 def train(path='data', model='resnet34', mode='pytorch',
-          batch_size=16, epochs=50, optimizer='adam'):
+          lr=0.01, batch_size=16, epochs=50, optimizer='adam'):
+
+    model = get_model(model, trained=False)
     if mode == 'pytorch':
-        pass
+        optim, lr_decay = get_optim(model, optimizer, )
 
 
 def get_model(model_name, trained=True):
