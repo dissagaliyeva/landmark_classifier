@@ -48,8 +48,8 @@ def change_ending(model, name):
     return model
 
 
-def train(path='data', model_name='resnet34', mode='pytorch',
-          lr=0.01, batch_size=16, epochs=50, optimizer='adam'):
+def train(path='data', model_name='resnet34', mode='pytorch', lr=0.01,
+          batch_size=16, epochs=50, optimizer='adam', save_name=None):
     """
     Trains the model in pure PyTorch or FastAI. Shows the train/validation
     losses in a plot and prints train/val/test losses at the end of the training.
@@ -70,6 +70,8 @@ def train(path='data', model_name='resnet34', mode='pytorch',
         Number of epochs
     optimizer  : str (default="adam")
         Optimizer to use (options: adam, adagrad, sgd)
+    save_name  : str (default=None)
+        Name of the checkpoint
     """
 
     # get cuda parameters
@@ -86,12 +88,13 @@ def train(path='data', model_name='resnet34', mode='pytorch',
                                         learning_decay=True, nesterov=True)
         # train model
         model, train_loss, val_loss = train_pytorch(epochs, loaders, model, optimizer,
-                                                    cuda, lr_decay, model_name=model_name)
+                                                    cuda, lr_decay, model_name=model_name,
+                                                    save_name=save_name)
         # visualize the results
         pytorch_results(train_loss, val_loss)
 
         # test the model
-        confused_with, test_dict, test_loss = test_pytorch(loaders, model, criterion, cuda, dictionary)
+        confused_with, test_dict, test_loss = test_pytorch(loaders, model, cuda, dictionary)
 
         # show final results
         print(f'''========== Ending Training ==========
@@ -101,8 +104,8 @@ def train(path='data', model_name='resnet34', mode='pytorch',
         ''')
 
 
-def train_pytorch(epochs, loaders, model, optimizer, cuda,
-                  lr_decay, save_path='checkpoints', model_name='resnet34'):
+def train_pytorch(epochs, loaders, model, optimizer, cuda, lr_decay,
+                  save_path='checkpoints', model_name='resnet34', save_name=None):
     """
     Train a PyTorch model of choice (vgg16, resnet18, resnet34).
 
@@ -122,6 +125,8 @@ def train_pytorch(epochs, loaders, model, optimizer, cuda,
         Path to store the best model in
     model_name  : str (default="resnet34")
         Name of the model (vgg16, resnet18, resnet34)
+    save_name   : str (default=None)
+        Name of the checkpoint
 
     Returns
     -------
@@ -201,7 +206,8 @@ def train_pytorch(epochs, loaders, model, optimizer, cuda,
         # if the validation loss has decreased, save the model at the filepath stored in save_path
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min, valid_loss))
-            torch.save(model.state_dict(), os.path.join(save_path, model_name + '.pt'))
+            path = model_name + '.pt' if save_name is None else save_name + '.pt'
+            torch.save(model.state_dict(), os.path.join(save_path, path))
             valid_loss_min = valid_loss
 
         # update learning rate decay
