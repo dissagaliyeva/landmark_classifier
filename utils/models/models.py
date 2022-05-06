@@ -20,10 +20,39 @@ def change_ending(model, name):
     elif name == 'resnet34' or name == 'resnet18':
         model.fc = nn.Linear(in_features=512, out_features=50)
 
+    return model
+
 
 def train(path='data', model='resnet34', mode='pytorch',
           batch_size=16, epochs=50, optimizer='adam'):
-    pass
+    if mode == 'pytorch':
+        pass
+
+
+def get_model(model_name, trained=True):
+    # get cuda condition
+    cuda = torch.cuda.is_available()
+
+    model = None
+
+    if model_name.lower() == 'resnet34':
+        model = change_ending(resnet34(pretrained=True), 'resnet34')
+        if trained:
+            model.load_state_dict(torch.load('checkpoints/model_resnet34.pt'))
+    elif model_name.lower() == 'resnet18':
+        model = change_ending(resnet18(pretrained=True), 'resnet18')
+        if trained:
+            model.load_state_dict(torch.load('checkpoints/model_resnet18.pt'))
+    elif model_name.lower() == 'vgg16':
+        model = change_ending(vgg16(pretrained=True), 'vgg16')
+        if trained:
+            model.load_state_dict(torch.load('checkpoints/model_vgg16.pt'))
+
+    # set model to cuda if available
+    if cuda:
+        model = model.cuda()
+
+    return model
 
 
 def predict_image(img, title, model_name='resnet34'):
@@ -35,27 +64,8 @@ def predict_image(img, title, model_name='resnet34'):
     :return:
     """
 
-    # get cuda condition
-    cuda = torch.cuda.is_available()
-
     # open checkpoints and predict the image
-    model = None
-    if model_name.lower() == 'resnet34':
-        model = resnet34(pretrained=True)
-        change_ending(model, 'resnet34')
-        model.load_state_dict(torch.load('checkpoints/model_resnet34.pt'))
-    elif model_name.lower() == 'resnet18':
-        model = resnet18(pretrained=True)
-        change_ending(model, 'resnet18')
-        model.load_state_dict(torch.load('checkpoints/model_resnet18.pt'))
-    elif model_name.lower() == 'vgg16':
-        model = vgg16(pretrained=True)
-        change_ending(model, 'vgg16')
-        model.load_state_dict(torch.load('checkpoints/model_vgg16.pt'))
-
-    # set model to cuda if available
-    if cuda:
-        model = model.cuda()
+    model = get_model(model_name, trained=True)
 
     # create dictionary
     dictionary = Dictionary(datasets.ImageFolder('output/train'))
