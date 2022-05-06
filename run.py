@@ -1,5 +1,6 @@
 # USAGE
 # python run.py
+
 import os.path
 import re
 import argparse
@@ -75,7 +76,7 @@ args = vars(ap.parse_args())
 
 if args['custom']:
     print('Training a model...')
-    models.train(path=args['path'], model=args['model'], lr=args['lr'],
+    models.train(path=args['path'], model_name=args['model'], lr=args['lr'],
                  mode=args['train'], batch_size=args['batch'],
                  epochs=args['epochs'], optimizer=args['optim'])
 

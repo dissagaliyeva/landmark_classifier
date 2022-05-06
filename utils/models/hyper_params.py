@@ -5,6 +5,25 @@ from torch import optim
 
 def get_optim(model, optim_name, lr=0.01,
               learning_decay=False, nesterov=True):
+    """
+
+    Parameters
+    ----------
+    model :
+        param optim_name:
+    lr :
+        param learning_decay: (Default value = 0.01)
+    nesterov :
+        return: (Default value = True)
+    optim_name :
+        
+    learning_decay :
+         (Default value = False)
+
+    Returns
+    -------
+
+    """
     optimizer = None
     lr_decay  = None
     momentum  = 0.9

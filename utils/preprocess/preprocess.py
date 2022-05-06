@@ -9,11 +9,25 @@ import re
 import os
 import random
 import splitfolders
+from utils.utils import Dictionary
 
 MEAN, STD = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
 
 
 def get_transforms(img_size, crop_size):
+    """
+
+    Parameters
+    ----------
+    img_size :
+        param crop_size:
+    crop_size :
+        
+
+    Returns
+    -------
+
+    """
     # define transformations
     return {
         'train': transforms.Compose([
@@ -45,14 +59,24 @@ def pytorch_loaders(n_batch, path='data', batch=True,
                     cuda=True, img_size=226, crop_size=224) -> tuple:
     """
 
+    Parameters
+    ----------
+    crop_size :
+        param img_size: (Default value = 224)
+    n_batch :
+        param path:
+    batch :
+        param cuda: (Default value = True)
+    path :
+         (Default value = 'data')
+    cuda :
+         (Default value = True)
+    img_size :
+         (Default value = 226)
 
-    :param crop_size:
-    :param img_size:
-    :param n_batch:
-    :param path:
-    :param batch:
-    :param cuda:
-    :return:
+    Returns
+    -------
+
     """
 
     transform = get_transforms(img_size, crop_size)
@@ -82,32 +106,58 @@ def pytorch_loaders(n_batch, path='data', batch=True,
     valid_loader = DataLoader(valid_holder, batch_size=n_batch, shuffle=True)
     test_loader = DataLoader(test_holder, batch_size=n_batch, shuffle=True)
 
-    return train_loader, valid_loader, test_loader, train_holder
+    loader = {'train': train_loader, 'val': valid_loader, 'test': test_loader}
+    dictionary = Dictionary(train_holder)
+    return loader, dictionary
 
 
 def get_random_image(path):
+    """
+
+    Parameters
+    ----------
+    path :
+        return:
+
+    Returns
+    -------
+
+    """
     folder = path + '/' + random.choice(os.listdir(path))
     return Image.open(os.path.join(folder, random.choice(os.listdir(folder))))
 
 
 def predict_landmarks(k: int, model, dictionary, img=None,
                       cuda=True, img_size=226, crop_size=224):
-    """
-    This function read the image file, applies appropriate transformations, predicts top K locations of images.
-
+    """This function read the image file, applies appropriate transformations, predicts top K locations of images.
+    
     Parameters:
          k (int):       Top locations to show
          cuda (bool):   Whether GPU is enabled or not (default=True)
-
+    
     Returns:
         transformed image and pretty formatted location predictions
-        :param img:
-        :param dictionary:
-        :param cuda:
-        :param k:
-        :param model:
-        :param crop_size:
-        :param img_size:
+
+    Parameters
+    ----------
+    img :
+        param dictionary: (Default value = None)
+    cuda :
+        param k: (Default value = True)
+    model :
+        param crop_size:
+    img_size :
+         (Default value = 226)
+    k: int :
+        
+    dictionary :
+        
+    crop_size :
+         (Default value = 224)
+
+    Returns
+    -------
+
     """
 
     temp = get_random_image('data/train') if img is None else img

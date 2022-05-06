@@ -7,13 +7,20 @@ from utils.preprocess.preprocess import predict_landmarks
 
 
 def visualize(dictionary, loader=None, single=True):
-    """
-    Create single and batch visualizations.
+    """Create single and batch visualizations.
 
-    Parameters:
-        loader:             Instance of DataLoader to iterate through
-        dictionary (class): Previously created Dictionary class
-        single (bool):      Show a single image or not. Default is False
+    Parameters
+    ----------
+    loader :
+        Instance of DataLoader to iterate through (Default value = None)
+    dictionary :
+        class
+    single :
+        bool (Default value = True)
+
+    Returns
+    -------
+
     """
 
     # create converters for images and labels
@@ -22,6 +29,21 @@ def visualize(dictionary, loader=None, single=True):
 
     # transform single images and their labels
     def show_single(image, lbl, index=0):
+        """
+
+        Parameters
+        ----------
+        image :
+            
+        lbl :
+            
+        index :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         image = convert(image[index, :])  # transform the image
         lbl = convert_label(lbl[index])  # get the label from dictionary
         return image, dictionary.get_content(int(lbl))
@@ -48,7 +70,20 @@ def visualize(dictionary, loader=None, single=True):
     plt.show()
 
 
-def show_image(image, name=None, prediction=None):
+def show_image(image, name=None):
+    """
+
+    Parameters
+    ----------
+    image :
+        param name:
+    name :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     plt.figure(figsize=(9, 5))
     plt.grid(False)
     plt.imshow(image)
@@ -62,8 +97,23 @@ def show_image(image, name=None, prediction=None):
 
 
 def suggest_locations(img, model, dictionary, k=1, name=None):
-    """
-    This function shows the final image and associated K predictions.
+    """This function shows the final image and associated K predictions.
+
+    Parameters
+    ----------
+    img :
+        
+    model :
+        
+    dictionary :
+        
+    k :
+         (Default value = 1)
+    name :
+         (Default value = None)
+
+    Returns
+    -------
 
     """
     # get cuda condition
@@ -97,3 +147,38 @@ def suggest_locations(img, model, dictionary, k=1, name=None):
     plt.tight_layout()
     plt.show()
 
+
+def pytorch_results(train: list, val: list):
+    """This function is used in the training/validation step. It shows the change of losses throughout N epochs.
+
+    Parameters
+    ----------
+    train :
+        List of train losses
+    val :
+        List of validation losses
+    train: list :
+        
+    val: list :
+        
+
+    Returns
+    -------
+
+    """
+    # double-verification that both train and validation are lists
+    assert type(train) == list and type(val) == list
+
+    # set title
+    plt.title('Train/Validation Losses')
+    # plot validation losses
+    plt.plot(np.arange(len(val)), val, label='Validation')
+    # plot train losses
+    plt.plot(np.arange(len(train)), train, label='Train')
+    # set labels
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    # show labels
+    plt.legend()
+    # show plot
+    plt.show()
