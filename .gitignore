@@ -60,4 +60,5 @@ docs/source/changelog.md
 /ignore/
 data
 output
-checkpoints
+checkpoints/vgg16.pt
+checkpoints/vgg16.zip
