@@ -52,9 +52,9 @@ If you want to train your own model, make sure to specify:
 
 Example: 
 
-```python -c True```
-
 ```
+python -c True
+
 python -c True -m "resnet18" -t "fastai" -b 32 -e 50 -o "adagrad"
 ```
 
