@@ -21,7 +21,7 @@ def change_ending(model, name):
 
     Parameters
     ----------
-    model : torchvision.models.resnet.ResNet
+    model : torchvision.models object
         CNN model (options: vgg16, resnet18, resnet34)
 
     name :  str
@@ -32,14 +32,17 @@ def change_ending(model, name):
     CNN model with changed last layer parameters
 
     """
+    # change the last layer
     if name == 'vgg16':
         # params for vgg16
         for param in model.features.parameters():
             param.requires_grad = False
 
+        # set the new nn layer
         model.classifier[6] = nn.Linear(model.classifier[6].in_features, 50)
 
     elif name == 'resnet34' or name == 'resnet18':
+        # set the last fc layer to 50
         model.fc = nn.Linear(in_features=512, out_features=50)
 
     return model
@@ -48,7 +51,8 @@ def change_ending(model, name):
 def train(path='data', model_name='resnet34', mode='pytorch',
           lr=0.01, batch_size=16, epochs=50, optimizer='adam'):
     """
-    Trains the model in pure PyTorch or FastAI.
+    Trains the model in pure PyTorch or FastAI. Shows the train/validation
+    losses in a plot and prints train/val/test losses at the end of the training.
 
     Parameters
     ----------
@@ -60,30 +64,24 @@ def train(path='data', model_name='resnet34', mode='pytorch',
         Name of the library to train the model in (options: pytorch, fastai)
     lr         : int (default=0.01)
         Learning rate
-
-
-    mode : str
-        param lr: (Default value = 'pytorch')
-    batch_size :
-        param epochs: (Default value = 16)
-    optimizer :
-        return: (Default value = 'adam')
-    model_name :
-         (Default value = 'resnet34')
-    lr :
-         (Default value = 0.01)
-    epochs :
-         (Default value = 50)
-
-    Returns
-    -------
-
+    batch_size : int (default=16)
+        Batch size
+    epochs     : int (default=50)
+        Number of epochs
+    optimizer  : str (default="adam")
+        Optimizer to use (options: adam, adagrad, sgd)
     """
+
+    # get cuda parameters
     cuda = torch.cuda.is_available()
 
+    # train a pytorch model
     if mode == 'pytorch':
+        # get model
         model = get_model(model_name, trained=False)
+        # get loaders and dictionary that holds cleaned labels
         loaders, dictionary = pytorch_loaders(batch_size, path, cuda)
+        # get optimizers
         optimizer, lr_decay = get_optim(model, optimizer, lr=lr,
                                         learning_decay=True, nesterov=True)
         # train model
@@ -106,29 +104,28 @@ def train(path='data', model_name='resnet34', mode='pytorch',
 def train_pytorch(epochs, loaders, model, optimizer, cuda,
                   lr_decay, save_path='checkpoints', model_name='resnet34'):
     """
+    Train a PyTorch model of choice (vgg16, resnet18, resnet34).
 
     Parameters
     ----------
-    epochs :
-        param loaders:
-    model :
-        param optimizer:
-    cuda :
-        param lr_decay:
-    save_path :
-        param model_name: (Default value = 'checkpoints')
-    loaders :
-        
-    optimizer :
-        
-    lr_decay :
-        
-    model_name :
-         (Default value = 'resnet34')
+    epochs      : int
+        Number of epochs to train for
+    loaders     : dict
+        Train/val/test loaders stored in a dictionary
+    model       : torchvision.models object
+        CNN model (options: vgg16, resnet18, resnet34)
+    cuda        : bool
+        Whether CUDA is enabled
+    lr_decay    : torch.optim.ExponentialLR
+        Learning decay scheduler
+    save_path   : str (default="checkpoints")
+        Path to store the best model in
+    model_name  : str (default="resnet34")
+        Name of the model (vgg16, resnet18, resnet34)
 
     Returns
     -------
-
+    Trained model and lists of train/validation losses
     """
     # create empty lists to store values
     train_losses = []
@@ -214,24 +211,27 @@ def train_pytorch(epochs, loaders, model, optimizer, cuda,
     return model, train_losses, valid_losses
 
 
-def test_pytorch(loaders, model, criterion, cuda, dictionary):
+def test_pytorch(loaders, model, cuda, dictionary):
     """
+    Test the model's performance
+
     Parameters
     ----------
-    loaders :
-        param model:
-    criterion :
-        param cuda:
-    dictionary :
-        return:
-    model :
-        
-    cuda :
-        
+    loaders     : dict
+        Train/val/test loaders stored in a dictionary
+    model       : torchvision.models object
+        CNN model (options: vgg16, resnet18, resnet34)
+    cuda        : bool
+        Whether CUDA is enabled
+    dictionary  : object
+        Dictionary object that stores classes
 
     Returns
     -------
-
+    `confused_with` - dictionary that stores all classes that were wrongly predicted
+                      in the descending order
+    `test_dict`     - dictionary that stores all classes and test prediction information
+    `test_loss`     - list that stores loss metrics
     """
     test_loss, correct, total = 0., 0., 0.
 
@@ -295,23 +295,28 @@ def test_pytorch(loaders, model, criterion, cuda, dictionary):
 
 def get_model(model_name, trained=True):
     """
+    Create model and load from checkpoint if `trained` is enabled
 
     Parameters
     ----------
-    model_name :
-        param trained:
-    trained :
-         (Default value = True)
+    model_name  : str
+        Name of the CNN model (vgg16, resnet18, resnet34)
+    trained     : bool (default=True)
+        Whether to train a new model or load existing
 
     Returns
     -------
+    Trained model loaded from checkpoints (if trained=True) or
+    loads a new pre-trained model from torchvision.models
 
     """
     # get cuda condition
     cuda = torch.cuda.is_available()
 
+    # create a placeholder
     model = None
 
+    # load a new or fully-trained model
     if model_name.lower() == 'resnet34':
         model = change_ending(resnet34(pretrained=True), 'resnet34')
         if trained:
@@ -334,19 +339,17 @@ def get_model(model_name, trained=True):
 
 def predict_image(img, title, model_name='resnet34'):
     """
+    Predict the given image and show TOP-3 predictions
+    histogram side-by-side
 
     Parameters
     ----------
-    img :
-        param title:
-    model_name :
-        return: (Default value = 'resnet34')
-    title :
-        
-
-    Returns
-    -------
-
+    img         : PIL.Image
+        PIL.Image
+    title       : str
+        Folder location of the image
+    model_name  : str (default="resnet34")
+        Name of the model (options: vgg16, resnet18, resnet34)
     """
 
     # open checkpoints and predict the image
