@@ -37,7 +37,9 @@ conda install -c fastai fastai
 
 There are 12 different images from 4 classes to choose from in [images](https://github.com/dissagaliyeva/landmark_classifier/tree/master/images) folder. 
 
-```python run.py```
+```
+python run.py
+```
 
 - **Train your own model**
 
