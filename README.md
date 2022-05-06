@@ -26,7 +26,35 @@ human judgement to classify these landmarks would not be feasible.
 Clone the GitHub repository and use the following commands:
 ```
 git clone https://github.com/dissagaliyeva/landmark_classifier
+conda create --name landmark_classifier 
 pip install -r requirements.txt
+conda install -c fastai fastai
 ```
 
 ### Usage 
+
+- **Run a single-image prediction with default model (resnet34)** 
+
+There are 12 different images from 4 classes to choose from in [images](https://github.com/dissagaliyeva/landmark_classifier/tree/master/images) folder. 
+
+```python run.py```
+
+- **Train your own model**
+
+If you want to train your own model, make sure to specify:
+1) Custom (default=False):                    -c True
+2) Data path (default='data')                 -p "data"
+3) Model (default=resnet34, vgg16, resnet18): -m "resnet34"
+4) Train (default=pytorch, fastai):           -t "pytorch" 
+5) Batch size (default=16):                   -b 16
+6) Epochs (default=20):                       -e 20
+7) Optimizer (default=adam, sgd, adagrad)     -o "adam"
+
+Example: 
+
+```python -c True```
+
+```
+python -c True -m "resnet18" -t "fastai" -b 32 -e 50 -o "adagrad"
+```
+
