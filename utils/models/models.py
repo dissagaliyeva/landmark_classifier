@@ -5,10 +5,16 @@ from torchvision.models import resnet34, resnet18, vgg16
 
 import os
 import numpy as np
+import pandas as pd
 from utils.utils import Dictionary
 from utils.visualize.visualize import suggest_locations, pytorch_results
 from utils.models.hyper_params import get_optim
 from utils.preprocess.preprocess import pytorch_loaders
+
+# import fastai library
+import fastbook
+from fastbook import *
+import fastai
 
 # create criterion
 criterion = nn.CrossEntropyLoss()
@@ -102,6 +108,9 @@ def train(path='data', model_name='resnet34', mode='pytorch', lr=0.01,
         Valid loss: {val_loss[-1]}
         Test  loss: {test_loss}
         ''')
+    elif mode == 'fastai':
+        dls, model = train_fastai(path='output', bs=batch_size, img_size=226, shuffle=True,
+                                  freeze=3, epochs=epochs, model=model_name)
 
 
 def train_pytorch(epochs, loaders, model, optimizer, cuda, lr_decay,
@@ -341,6 +350,82 @@ def get_model(model_name, trained=True):
         model = model.cuda()
 
     return model
+
+
+# create a dataloader
+def get_data_loader(path='output', bs=16, img_size=226, shuffle=True):
+    datablock = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                          get_items=partial(get_image_files, folders=['train', 'val']),
+                          splitter=GrandparentSplitter(train_name='train', valid_name='val'),
+                          get_y=parent_label,
+                          item_tfms=[Resize((img_size, img_size), method='pad', pad_mode='zeros'),
+                                     ToTensor()],
+                          batch_tfms=[*aug_transforms(flip_vert=True, max_rotate=15,
+                                                      pad_mode='zeros', max_lighting=0.6),
+                                      Normalize.from_stats(*imagenet_stats)])
+    return datablock.dataloaders(path, bs=bs, drop_last=True, shuffle=shuffle)
+
+
+def train_fastai(path='output', bs=16, img_size=226, shuffle=True,
+                freeze=3, epochs=20, model=resnet34):
+    """
+  Train and save best model.
+    :param path:     Path to a folder (has to have train/val folders)
+    :param bs:       Batch size, default=16
+    :param img_size: Image size, default: 256x256
+    :param shuffle:  Whether to shuffle data, default: true
+    :param freeze:   Number of epochs to train for with frozen layers, default=3
+    :param epochs:   Number of epochs to train the whole model for, default=10
+    :param model:    Model to train with, default=ResNet50
+
+  :return: DataLoader (dls) and trained model (learn)
+  """
+    model_name = str(model).split(' ')[1]
+
+    print(f"""
+  ===== Start training =====
+  Epochs: {epochs}
+  Model: {model_name}
+  Freeze epochs: {freeze}
+  Batch size: {bs}
+  """)
+
+    # get the dataloader
+    dls = get_data_loader(path, bs, img_size, shuffle)
+    # create a model, save with the highest accuracy and F1 score
+    learn = cnn_learner(dls, model, metrics=[accuracy, F1Score(average='macro')],
+                        cbs=SaveModelCallback(monitor='f1_score', comp=np.greater))
+    # freeze and train
+    learn.fine_tune(epochs, freeze_epochs=freeze,
+                    cbs=[ShowGraphCallback(), TrackerCallback()])
+    # plot confusion matrix and classification report
+    plot_results(learn)
+
+    # save checkpoint
+    if not os.path.exists('checkpoints'):
+        os.mkdir('checkpoints')
+    # get the unique model name
+    acc = round(learn.final_record[1], 2)
+    name = model_name + '_' + str(acc) + 'acc'
+    learn.save(os.path.join('checkpoints', name))
+
+    # return DataLoader and trained model
+    return dls, learn
+
+
+def plot_results(learn):
+    """
+  This function creates a confusion matrix and classification report.
+    :param learn: FastAI's cnn_learner instance
+  """
+    interp = ClassificationInterpretation.from_learner(learn)
+    interp.print_classification_report()
+
+    # print the "most confused" classes
+    print('===============')
+    print('Most confused')
+    print(pd.DataFrame({'confused': interp.most_confused(min_val=2)}))
+    print('===============')
 
 
 def predict_image(img, title, model_name='resnet34'):
