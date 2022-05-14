@@ -60,3 +60,4 @@ python -c True
 python -c True -m "resnet18" -t "fastai" -b 32 -e 50 -o "adagrad"
 ```
 
+I've also provided a notebook that shows how to use the library. Follow [this link](https://github.com/dissagaliyeva/landmark_classifier/blob/master/example.ipynb) to open it. 
