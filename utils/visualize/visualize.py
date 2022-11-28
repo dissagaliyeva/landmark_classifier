@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import torch.cuda
+from torchvision import transforms
 
 from utils.preprocess.preprocess import predict_landmarks
 
@@ -26,6 +27,8 @@ def visualize(dictionary, loader=None, single=True):
     # create converters for images and labels
     convert = lambda x: np.clip(x.numpy().transpose((1, 2, 0)), 0, 1)
     convert_label = lambda x: str(x.item())
+    s, m = torch.Tensor([0.229, 0.224, 0.225]), torch.Tensor([0.485, 0.456, 0.406])
+    unnormalize = transforms.Normalize((-m / s).tolist(), (1.0 / s).tolist())
 
     # transform single images and their labels
     def show_single(image, lbl, index=0):
@@ -44,6 +47,7 @@ def visualize(dictionary, loader=None, single=True):
         -------
 
         """
+        image = unnormalize(image)
         image = convert(image[index, :])  # transform the image
         lbl = convert_label(lbl[index])  # get the label from dictionary
         return image, dictionary.get_content(int(lbl))
