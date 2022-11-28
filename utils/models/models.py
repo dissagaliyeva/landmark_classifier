@@ -406,8 +406,8 @@ def train_fastai(path='output', bs=16, img_size=226, shuffle=True,
         os.mkdir('checkpoints')
     # get the unique model name
     acc = round(learn.final_record[1], 2)
-    name = model_name + '_' + str(acc) + 'acc'
-    learn.save(os.path.join('checkpoints', name))
+    name = model_name + '_' + str(acc) + 'acc.pt'
+    torch.save(learn.model, os.path.join('checkpoints', name))
 
     # return DataLoader and trained model
     return dls, learn
